@@ -11,20 +11,20 @@ var items = getLocalStorage();
 var editId = null;
 
 function render() {
-  var $app = $("#app").empty();
-  var itemToEdit = editId ? $.grep(items, (i) => i.id === editId)[0] : null;
-  $app.append(createForm(editId, itemToEdit));
-  $app.append(createItems(items));
-}
+  var $app = $("#app");
+  $app.empty();
 
-function addItem(name) {
-  items.push({ id: new Date().getTime().toString(), name, completed: false });
-  syncAndRender();
-}
+  var itemToEdit = editId
+    ? $.grep(items, function (item) {
+        return item.id === editId;
+      })[0]
+    : null;
 
-function removeItem(id) {
-  items = $.grep(items, (item) => item.id !== id);
-  syncAndRender();
+  var $formElement = createForm(editId, itemToEdit);
+  var $itemsElement = createItems(items);
+
+  $app.append($formElement);
+  $app.append($itemsElement);
 }
 
 function syncAndRender() {
@@ -32,4 +32,65 @@ function syncAndRender() {
   render();
 }
 
-$(document).ready(render);
+function addItem(itemName) {
+  var newItem = {
+    name: itemName,
+    completed: false,
+    id: new Date().getTime().toString(),
+  };
+  items.push(newItem);
+  syncAndRender();
+
+  setTimeout(function () {
+    alert("Item Added Successfully!");
+  }, 0);
+}
+
+function editCompleted(itemId) {
+  items = $.map(items, function (item) {
+    if (item.id === itemId) {
+      return $.extend({}, item, { completed: !item.completed });
+    }
+    return item;
+  });
+  syncAndRender();
+}
+
+function updateItemName(newName) {
+  items = $.map(items, function (item) {
+    if (item.id === editId) {
+      return $.extend({}, item, { name: newName });
+    }
+    return item;
+  });
+  editId = null;
+  syncAndRender();
+
+  setTimeout(function () {
+    alert("Item Updated Successfully!");
+  }, 0);
+}
+
+function removeItem(itemId) {
+  items = $.grep(items, function (item) {
+    return item.id !== itemId;
+  });
+  syncAndRender();
+
+  setTimeout(function () {
+    alert("Item Deleted Successfully!");
+  }, 0);
+}
+
+function setEditId(itemId) {
+  editId = itemId;
+  render();
+
+  setTimeout(function () {
+    $(".form-input").focus();
+  }, 0);
+}
+
+$(document).ready(function () {
+  render();
+});
